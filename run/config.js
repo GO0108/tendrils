@@ -115,13 +115,15 @@ module.exports = {
       ],
 
       /**
-       * Settings to be passed through to `gulp-sass` and `node-sass`.
-       * NOTE: `compact` used instead of `compressed` to due sourcemap bug.
+       * Settings to be passed through to `gulp-sass` (dart-sass).
+       * NOTE: dart-sass only supports 'expanded' and 'compressed'
+       * output styles (the old libsass 'compact'/'nested' styles
+       * from node-sass no longer exist).
        *
        * @type {Object}
        */
       sassSettings: {
-        outputStyle: 'compact'
+        outputStyle: 'expanded'
       },
 
       /**
@@ -174,26 +176,31 @@ module.exports = {
           libraryTarget: 'umd'
         },
         module: {
-          loaders: [
+          rules: [
             {
               test: /\.js$/,
               exclude: /node_modules/,
-              loader: 'babel?presets[]=es2015,presets[]=stage-2'
+              loader: 'babel-loader',
+              options: {
+                presets: ['es2015', 'stage-2']
+              }
             },
             {
               test: /[\\\/]modernizr\.js$/,
-              loader: 'imports?this=>window,html5=>window.html5!exports?window.Modernizr'
+              use: [
+                'imports-loader?this=>window,html5=>window.html5',
+                'exports-loader?window.Modernizr'
+              ]
             },
             {
               test: /\.(glsl|frag|vert)$/,
               exclude: /node_modules/,
-              loader: 'raw!glslify'
-            }
-          ],
-          postLoaders: [
+              use: ['raw-loader', 'glslify']
+            },
             {
               test: /\.(js|glsl|frag|vert)$/,
-              loader: 'ify'
+              enforce: 'post',
+              loader: 'ify-loader'
             }
           ]
         },

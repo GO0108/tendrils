@@ -10,6 +10,4 @@
 var gulp = require('gulp'),
     args = require('yargs').argv;
 
-gulp.task('default', function() {
-    gulp.start('build');
-});
+gulp.task('default', gulp.series('build'));

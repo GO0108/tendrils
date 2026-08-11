@@ -17,33 +17,39 @@ var gulp = require('gulp'),
     globalSettings = require('../config');
 
 gulp.task('watch',
-    ['assets', 'custom-deps', 'html', 'styles'],
-    function() {
-        var watchFunctions = {
-            html: function() {
-                console.log(chalk.bgYellow.gray(' FE Skeleton: Watching HTML.'));
-                gulp.watch(globalSettings.taskConfiguration.watch.sourcePaths.html, ['html']);
-            },
-            styles: function() {
-                console.log(chalk.bgYellow.gray(' FE Skeleton: Watching styles.'));
-                gulp.watch(globalSettings.taskConfiguration.watch.sourcePaths.styles, ['styles']);
-            },
-            scripts: function() {
-                console.log(chalk.bgYellow.gray(' FE Skeleton: Watching scripts.'));
-                gulp.run('scripts:watch');
-            }
-        };
+    gulp.series(
+        gulp.parallel('assets', 'custom-deps', 'html'),
+        'styles',
+        function watchAll(done) {
+            var watchFunctions = {
+                html: function() {
+                    console.log(chalk.bgYellow.gray(' FE Skeleton: Watching HTML.'));
+                    gulp.watch(globalSettings.taskConfiguration.watch.sourcePaths.html, gulp.series('html'));
+                },
+                styles: function() {
+                    console.log(chalk.bgYellow.gray(' FE Skeleton: Watching styles.'));
+                    gulp.watch(globalSettings.taskConfiguration.watch.sourcePaths.styles, gulp.series('styles'));
+                },
+                scripts: function() {
+                    console.log(chalk.bgYellow.gray(' FE Skeleton: Watching scripts.'));
+                    gulp.task('scripts:watch')();
+                }
+            };
 
-        // If no arguments were supplied then we start all watches.
-        // Else cycle supplied argumentss and build an array of method names.
-        var watchMethods = ((!args.watchType)?
-                Object.keys(watchFunctions)
-            :   args.watchType.split(',').map(function(currentValue) {
-                    return currentValue.trim();
-                }));
+            // If no arguments were supplied then we start all watches.
+            // Else cycle supplied argumentss and build an array of method names.
+            var watchMethods = ((!args.watchType)?
+                    Object.keys(watchFunctions)
+                :   args.watchType.split(',').map(function(currentValue) {
+                        return currentValue.trim();
+                    }));
 
-        // Cycle through the method names requiring watchers setup and call them.
-        watchMethods.forEach(function(methodName) {
-            watchFunctions[methodName]();
-        });
-    });
+            // Cycle through the method names requiring watchers setup and call them.
+            watchMethods.forEach(function(methodName) {
+                watchFunctions[methodName]();
+            });
+
+            done();
+        }
+    )
+);

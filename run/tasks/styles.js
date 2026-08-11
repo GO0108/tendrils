@@ -13,7 +13,8 @@ var globalSettings = require('../config');
 var sourcemaps = require('gulp-sourcemaps');
 var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
-var sass = require('gulp-sass');
+var dartSass = require('sass');
+var sass = require('gulp-sass')(dartSass);
 var prefix = require('gulp-autoprefixer');
 
 var styleSettings = globalSettings.taskConfiguration.styles;
